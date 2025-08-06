@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-74.006, 40.7128] },
+      "properties": {
+        "name": "New York",
+        "country": "USA",
+        "population": 8175133,
+        "description": "Major metropolitan area"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.1278, 51.5074] },
+      "properties": {
+        "name": "London",
+        "country": "UK",
+        "population": 8982000,
+        "description": "Capital of the UK"
+      }
+    }
+  ]
+}
