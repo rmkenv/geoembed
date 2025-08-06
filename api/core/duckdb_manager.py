@@ -21,12 +21,14 @@ class DuckDBManager:
         required_extensions = ['spatial', 'json']
         
         for ext in required_extensions:
+            install_error = None  # Initialize to avoid UnboundLocalError
             try:
                 # First, try to install the extension
                 logger.info(f"Installing {ext} extension...")
                 self.conn.execute(f"INSTALL {ext};")
                 logger.info(f"Successfully installed {ext} extension")
-            except Exception as install_error:
+            except Exception as e:
+                install_error = e
                 logger.warning(f"Install command for {ext} extension failed: {install_error}")
                 # This might be expected if extension is already installed
             
@@ -45,9 +47,10 @@ class DuckDBManager:
                     logger.info(f"Successfully installed and loaded {ext} extension on retry")
                 except Exception as retry_error:
                     logger.error(f"Failed to install and load {ext} extension on retry: {retry_error}")
+                    install_error_msg = f"Install error: {install_error}" if install_error else "No install error"
                     raise RuntimeError(f"Required extension '{ext}' could not be installed and loaded. "
                                      f"This is needed for DuckDB functionality. "
-                                     f"Install error: {install_error}, Load error: {load_error}, "
+                                     f"{install_error_msg}, Load error: {load_error}, "
                                      f"Retry error: {retry_error}")
 
     def _create_tables(self):
