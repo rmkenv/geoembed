@@ -22,21 +22,33 @@ class DuckDBManager:
         
         for ext in required_extensions:
             try:
-                # Install extension if not already installed
+                # First, try to install the extension
+                logger.info(f"Installing {ext} extension...")
                 self.conn.execute(f"INSTALL {ext};")
-                logger.info(f"Installed {ext} extension")
-            except Exception as e:
-                # Extension might already be installed, try to load it
-                logger.debug(f"Extension {ext} install failed (might already be installed): {e}")
+                logger.info(f"Successfully installed {ext} extension")
+            except Exception as install_error:
+                logger.warning(f"Install command for {ext} extension failed: {install_error}")
+                # This might be expected if extension is already installed
             
             try:
-                # Load the extension
+                # Now try to load the extension
+                logger.info(f"Loading {ext} extension...")
                 self.conn.execute(f"LOAD {ext};")
-                logger.info(f"Loaded {ext} extension")
-            except Exception as e:
-                logger.error(f"Failed to load {ext} extension: {e}")
-                raise RuntimeError(f"Required extension '{ext}' could not be loaded. "
-                                 f"This is needed for DuckDB functionality. Error: {e}")
+                logger.info(f"Successfully loaded {ext} extension")
+            except Exception as load_error:
+                logger.error(f"Failed to load {ext} extension: {load_error}")
+                # If loading fails, try installing first then loading again
+                try:
+                    logger.info(f"Retrying: Installing {ext} extension before loading...")
+                    self.conn.execute(f"INSTALL {ext};")
+                    self.conn.execute(f"LOAD {ext};")
+                    logger.info(f"Successfully installed and loaded {ext} extension on retry")
+                except Exception as retry_error:
+                    logger.error(f"Failed to install and load {ext} extension on retry: {retry_error}")
+                    raise RuntimeError(f"Required extension '{ext}' could not be installed and loaded. "
+                                     f"This is needed for DuckDB functionality. "
+                                     f"Install error: {install_error}, Load error: {load_error}, "
+                                     f"Retry error: {retry_error}")
 
     def _create_tables(self):
         """Create the geospatial embeddings table and related objects."""
