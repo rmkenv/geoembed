@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 
 from core.duckdb_manager import DuckDBManager
-from routers import vector, search, raster
+from routers import vector, search
 
 db_manager = None
 
@@ -35,7 +35,6 @@ def get_db_manager() -> DuckDBManager:
 
 app.include_router(vector.router, prefix="/embed/vector", tags=["vector-embeddings"])
 app.include_router(search.router, prefix="/search", tags=["search"])
-app.include_router(raster.router, prefix="/embed/raster", tags=["raster-embeddings"])
 
 @app.get("/")
 async def root():

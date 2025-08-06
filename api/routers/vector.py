@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import numpy as np
+import json
 from core.duckdb_manager import DuckDBManager
 from core.context_lang import ContextLanguageEmbedder
 from api.main import get_db_manager
@@ -30,12 +31,11 @@ async def embed_vectors(request: VectorEmbeddingRequest, db: DuckDBManager = Dep
         embedding_ids = []
         for f in request.features:
             emb = embedder.embed_feature(f.dict(), request.context_template, request.include_topology)
-            geom_json = f.json()['geometry']
             emb_id = db.insert_embedding(
                 name=f.properties.get('name', 'Unknown'),
                 source_type="vector",
                 properties=f.properties,
-                geometry=f.geometry and json.dumps(f.geometry),
+                geometry=json.dumps(f.geometry) if f.geometry else None,
                 embedding=emb,
                 model=embedder.model_name
             )
